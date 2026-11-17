@@ -26,10 +26,28 @@ setInterval(() => {
 }, 5 * 60 * 1000);
 
 /**
- * "Presigned PUT" — returns a fake upload URL.
- * For local storage, we return a backend upload endpoint.
+ * Derives the public base URL of the backend.
+ * Checks SERVER_URL, RENDER_EXTERNAL_URL, incoming request headers, or falls back to localhost.
  */
-const generatePresignedPutUrl = async (key, mimeType, expiresIn = 900) => {
+const getBaseUrl = (req) => {
+  if (process.env.SERVER_URL && process.env.SERVER_URL.trim() !== "") {
+    return process.env.SERVER_URL.replace(/\/$/, "");
+  }
+  if (process.env.RENDER_EXTERNAL_URL) {
+    return process.env.RENDER_EXTERNAL_URL.replace(/\/$/, "");
+  }
+  if (req) {
+    const proto = req.headers["x-forwarded-proto"] || req.protocol || "https";
+    const host = req.get("host");
+    return `${proto}://${host}`;
+  }
+  return `http://localhost:${process.env.PORT || 5000}`;
+};
+
+/**
+ * "Presigned PUT" — returns a backend upload endpoint.
+ */
+const generatePresignedPutUrl = async (key, mimeType, expiresIn = 900, req = null) => {
   const token = crypto.randomBytes(32).toString("hex");
   tokenStore.set(token, {
     key,
@@ -37,7 +55,7 @@ const generatePresignedPutUrl = async (key, mimeType, expiresIn = 900) => {
     type: "put",
     expiresAt: Date.now() + expiresIn * 1000,
   });
-  const baseUrl = process.env.SERVER_URL || `http://localhost:${process.env.PORT || 5000}`;
+  const baseUrl = getBaseUrl(req);
   return `${baseUrl}/api/files/upload?token=${token}`;
 };
 
@@ -48,7 +66,8 @@ const generatePresignedGetUrl = async (
   key,
   disposition = "inline",
   originalName = "",
-  expiresIn = 3600
+  expiresIn = 3600,
+  req = null
 ) => {
   const token = crypto.randomBytes(32).toString("hex");
   tokenStore.set(token, {
@@ -58,7 +77,7 @@ const generatePresignedGetUrl = async (
     type: "get",
     expiresAt: Date.now() + expiresIn * 1000,
   });
-  const baseUrl = process.env.SERVER_URL || `http://localhost:${process.env.PORT || 5000}`;
+  const baseUrl = getBaseUrl(req);
   return `${baseUrl}/api/files/serve?token=${token}`;
 };
 

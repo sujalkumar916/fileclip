@@ -70,7 +70,7 @@ const requestPresignedUrls = asyncHandler(async (req, res) => {
       // Build an S3 key scoped to a temporary "pending/" prefix
       const ext = file.name.includes(".") ? file.name.split(".").pop() : "";
       const s3Key = `clips/pending/${nanoid(16)}${ext ? "." + ext : ""}`;
-      const uploadUrl = await generatePresignedPutUrl(s3Key, file.mimeType, 900);
+      const uploadUrl = await generatePresignedPutUrl(s3Key, file.mimeType, 900, req);
 
       return {
         originalName: file.name,
@@ -129,7 +129,11 @@ const createClip = asyncHandler(async (req, res) => {
     expiresAt,
   });
 
-  const shareUrl = `${process.env.CLIENT_URL}/clip/${code}`;
+  const clientBase = (process.env.CLIENT_URL && process.env.CLIENT_URL !== "*")
+    ? process.env.CLIENT_URL.split(",")[0].trim()
+    : (req.headers.origin || "http://localhost:3000");
+
+  const shareUrl = `${clientBase.replace(/\/$/, "")}/clip/${code}`;
 
   res.status(201).json({
     success: true,
@@ -192,7 +196,7 @@ const getPresignedGetUrl = asyncHandler(async (req, res) => {
   }
 
   // Presigned GET URL valid for 1 hour
-  const url = await generatePresignedGetUrl(file.s3Key, disposition, file.originalName, 3600);
+  const url = await generatePresignedGetUrl(file.s3Key, disposition, file.originalName, 3600, req);
 
   // Increment download counter only for actual downloads
   if (disposition === "attachment") {

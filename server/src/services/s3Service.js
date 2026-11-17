@@ -23,12 +23,12 @@ if (mode === "s3") {
   const BUCKET = process.env.S3_BUCKET;
 
   storageService = {
-    generatePresignedPutUrl: async (key, mimeType, expiresIn = 900) => {
+    generatePresignedPutUrl: async (key, mimeType, expiresIn = 900, req = null) => {
       const command = new PutObjectCommand({ Bucket: BUCKET, Key: key, ContentType: mimeType });
       return getSignedUrl(s3Client, command, { expiresIn });
     },
 
-    generatePresignedGetUrl: async (key, disposition = "inline", originalName = "", expiresIn = 3600) => {
+    generatePresignedGetUrl: async (key, disposition = "inline", originalName = "", expiresIn = 3600, req = null) => {
       const responseContentDisposition =
         disposition === "attachment" && originalName
           ? `attachment; filename="${encodeURIComponent(originalName)}"`
