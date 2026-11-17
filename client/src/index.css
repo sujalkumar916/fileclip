@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Custom scrollbar ───────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-gray-900;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-600 rounded-full;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-500;
+}
+
+/* ── Smooth focus rings ─────────────────────────────────────────────────────── */
+*:focus-visible {
+  @apply outline-none ring-2 ring-violet-500 ring-offset-2 ring-offset-gray-900;
+}
+
+/* ── Animated gradient background ──────────────────────────────────────────── */
+.gradient-bg {
+  background: radial-gradient(ellipse at top left, #1e1b4b 0%, #0f0f1a 50%, #0c0c18 100%);
+  min-height: 100vh;
+}
+
+/* ── Glass card ─────────────────────────────────────────────────────────────── */
+.glass-card {
+  @apply bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl;
+}
+
+/* ── Clip code font ─────────────────────────────────────────────────────────── */
+.clip-code {
+  font-family: 'Courier New', Courier, monospace;
+  letter-spacing: 0.4em;
+}
+
+/* ── Pulse animation for upload progress ────────────────────────────────────── */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.shimmer {
+  background: linear-gradient(90deg, transparent 25%, rgba(255,255,255,0.08) 50%, transparent 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
